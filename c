@@ -1,0 +1,1 @@
+Initial commit: Setup React TypeScript project with Supabase and Firebase integration
