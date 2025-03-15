@@ -11,10 +11,13 @@ import {
   CheckCircle,
   Brain,
   Link as LinkIcon,
-  AlertTriangle
+  AlertTriangle,
+  XCircle,
+  Shield,
+  PartyPopper
 } from 'lucide-react';
 import { db, storage } from '../lib/firebase';
-import { collection, addDoc, query, where, orderBy, onSnapshot, Timestamp, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, query, where, orderBy, onSnapshot, Timestamp, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const WEBHOOK_URL = 'https://primary-production-d5c0.up.railway.app/webhook/aac328d1-79db-4dfd-9b25-b3c926ddc1a9';
@@ -43,8 +46,17 @@ interface TempProcessedResume extends ProcessedResume {
   pdfBlob?: Blob;
 }
 
+// Add this interface near other interfaces
+interface UserDailyUsage {
+  date: string;
+  count: number;
+}
+
 export default function Dashboard() {
+  const [showSuccess, setShowSuccess] = useState(false);
   const { user } = useAuth();
+  // Add dailyUsageCount state
+  const [dailyUsageCount, setDailyUsageCount] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [jobUrl, setJobUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -81,6 +93,24 @@ export default function Dashboard() {
       });
       setProcessedResumes(resumes);
       setUsageCount(resumes.length);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // Add this after your existing useEffect
+  useEffect(() => {
+    if (!user) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
+
+    const unsubscribe = onSnapshot(dailyUsageRef, (doc) => {
+      if (doc.exists()) {
+        setDailyUsageCount(doc.data().count || 0);
+      } else {
+        setDailyUsageCount(0);
+      }
     });
 
     return () => unsubscribe();
@@ -157,10 +187,30 @@ export default function Dashboard() {
       return;
     }
 
+    if (dailyUsageCount >= maxUsage) {
+      setError('You have reached your daily limit. Please try again tomorrow.');
+      return;
+    }
+
     setIsProcessing(true);
     setError('');
 
     try {
+      // Add this at the start of the try block
+      const today = new Date().toISOString().split('T')[0];
+      const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
+      
+      await updateDoc(dailyUsageRef, {
+        count: dailyUsageCount + 1,
+        lastUpdated: Timestamp.now()
+      }).catch(() => {
+        // If document doesn't exist, create it
+        setDoc(dailyUsageRef, {
+          count: 1,
+          lastUpdated: Timestamp.now()
+        });
+      });
+
       const formData = new FormData();
       formData.append('cv', file);
       formData.append('url', jobUrl);
@@ -202,6 +252,10 @@ export default function Dashboard() {
         setProcessedResumes(prev => [newResume, ...prev]);
         setUsageCount(prev => prev + 1);
         
+        // Show success message
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+
         // Reset form
         setFile(null);
         setJobUrl('');
@@ -242,6 +296,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50 pt-24">
+      {/* Add Success Message */}
+      {showSuccess && (
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-400 text-green-700 px-6 py-4 rounded-lg flex items-center space-x-3 animate-bounce shadow-lg z-50">
+          <PartyPopper className="h-6 w-6" />
+          <div>
+            <p className="font-semibold">Success!</p>
+            <p className="text-sm">Your enhanced resume is ready to download</p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Welcome Banner */}
         <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
@@ -259,12 +324,18 @@ export default function Dashboard() {
         </div>
 
         {showDataNotice && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
-            <div className="flex">
-              <AlertTriangle className="h-6 w-6 text-yellow-400" />
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700">
-                  Important: We don't store your resume data permanently. Please make sure to download your enhanced resume, as it will only be available temporarily.
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-enhanced p-6 mb-8 border border-blue-100">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <Shield className="h-8 w-8 text-blue-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-900 mb-1">
+                  Your Privacy Matters
+                </h3>
+                <p className="text-blue-700 leading-relaxed">
+                  For your security, we process your resume in real-time and don't store any personal data. 
+                  Make sure to download your enhanced resume now – it's a temporary file that prioritizes your privacy.
                 </p>
               </div>
             </div>
@@ -288,6 +359,13 @@ export default function Dashboard() {
                 <div className="flex items-center justify-center space-x-2">
                   <FileText className="h-6 w-6 text-green-500" />
                   <span className="text-green-700">{file.name}</span>
+                  <button
+                    onClick={() => setFile(null)}
+                    className="ml-2 p-1 text-red-500 hover:text-red-700 transition-colors rounded-full hover:bg-red-50"
+                    title="Remove file"
+                  >
+                    <XCircle className="h-5 w-5" />
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -346,9 +424,9 @@ export default function Dashboard() {
         <div className="mb-8">
           <button
             onClick={handleSubmit}
-            disabled={isProcessing || isUploading || !file || !jobUrl || usageCount >= maxUsage}
+            disabled={isProcessing || isUploading || !file || !jobUrl || dailyUsageCount >= maxUsage}
             className={`w-full py-4 px-6 rounded-lg text-white font-medium flex items-center justify-center space-x-2
-              ${isProcessing || isUploading || usageCount >= maxUsage ? 'bg-gray-400' : 'bg-gradient-primary hover:opacity-90'} 
+              ${isProcessing || isUploading || dailyUsageCount >= maxUsage ? 'bg-gray-400' : 'bg-gradient-primary hover:opacity-90'} 
               transform hover:scale-[1.02] transition-all shadow-enhanced`}
           >
             {isProcessing || isUploading ? (
@@ -368,13 +446,13 @@ export default function Dashboard() {
         {/* Usage Tracker */}
         <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">Resume Processing Limit</h3>
-            <span className="text-sm text-gray-600">{usageCount}/{maxUsage} resumes</span>
+            <h3 className="font-semibold text-gray-900">Daily Resume Processing Limit</h3>
+            <span className="text-sm text-gray-600">{dailyUsageCount}/{maxUsage} resumes today</span>
           </div>
           <div className="h-2 bg-gray-200 rounded-full">
             <div
               className="h-2 bg-primary-500 rounded-full transition-all duration-300"
-              style={{ width: `${(usageCount / maxUsage) * 100}%` }}
+              style={{ width: `${(dailyUsageCount / maxUsage) * 100}%` }}
             />
           </div>
         </div>
