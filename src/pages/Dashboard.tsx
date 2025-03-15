@@ -17,7 +17,7 @@ import { db, storage } from '../lib/firebase';
 import { collection, addDoc, query, where, orderBy, onSnapshot, Timestamp, updateDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-const WEBHOOK_URL = 'https://primary-production-d5c0.up.railway.app/webhook-test/aac328d1-79db-4dfd-9b25-b3c926ddc1a9';
+const WEBHOOK_URL = 'https://primary-production-d5c0.up.railway.app/webhook/aac328d1-79db-4dfd-9b25-b3c926ddc1a9';
 
 interface ProcessedResume {
   id: string;
@@ -38,6 +38,11 @@ const ALLOWED_FILE_TYPES = [
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// Add new interface for temporary resume
+interface TempProcessedResume extends ProcessedResume {
+  pdfBlob?: Blob;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
@@ -45,7 +50,7 @@ export default function Dashboard() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [processedResumes, setProcessedResumes] = useState<ProcessedResume[]>([]);
+  const [processedResumes, setProcessedResumes] = useState<TempProcessedResume[]>([]);
   const [usageCount, setUsageCount] = useState(0);
   const [maxUsage] = useState(3);
   const [dragActive, setDragActive] = useState(false);
@@ -154,107 +159,83 @@ export default function Dashboard() {
 
     setIsProcessing(true);
     setError('');
-    setIsUploading(true);
 
-    let docRef;
     try {
-      // First, upload the file to Firebase Storage
-      const storageRef = ref(storage, `resumes/${user.uid}/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const uploadedResumeUrl = await getDownloadURL(storageRef);
+      const formData = new FormData();
+      formData.append('cv', file);
+      formData.append('url', jobUrl);
 
-      // Create initial document in Firestore
-      docRef = await addDoc(collection(db, 'processedResumes'), {
-        userId: user.uid,
-        jobTitle: 'Job Application',
-        processedAt: Timestamp.now(),
-        status: 'processing',
-        originalResumeUrl: uploadedResumeUrl,
-        jobUrl: jobUrl,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      // Convert file to base64
-      const fileBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === 'string') {
-            const base64 = reader.result.split(',')[1];
-            resolve(base64);
-          } else {
-            reject(new Error('Failed to convert file to base64'));
-          }
-        };
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsDataURL(file);
-      });
-
-      // Send request to webhook
-      const response = await fetch(WEBHOOK_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          resume: fileBase64,
-          jobUrl: jobUrl,
-          userId: user.uid,
-          fileName: file.name,
-          resumeUrl: uploadedResumeUrl
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to process resume: ${response.status} ${response.statusText}${errorText ? ` - ${errorText}` : ''}`);
-      }
-
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to process resume');
-      }
-
-      // Update the document with the result
-      await updateDoc(doc(db, 'processedResumes', docRef.id), {
-        status: 'completed',
-        downloadUrl: result.enhancedResumeUrl || result.resumeUrl
-      });
-
-      setShowDataNotice(true);
-      setFile(null);
-      setJobUrl('');
-      
-    } catch (error: any) {
-      console.error('Error processing resume:', error);
-      
-      // Create a user-friendly error message
-      let errorMessage = 'Failed to process resume. Please try again.';
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      } else if (error && typeof error === 'object' && 'message' in error) {
-        errorMessage = error.message;
-      }
-      
-      setError(errorMessage);
-      
-      // Update the document to show error state if it was created
-      if (docRef) {
-        await updateDoc(doc(db, 'processedResumes', docRef.id), {
-          status: 'error',
-          error: errorMessage
+      try {
+        const response = await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server error: ${errorText || response.statusText}`);
+        }
+
+        // Get the PDF blob from response
+        const pdfBlob = await response.blob();
+        if (!pdfBlob || pdfBlob.size === 0) {
+          throw new Error('Received empty response from server');
+        }
+
+        // Create temporary resume entry
+        const newResume: TempProcessedResume = {
+          id: Date.now().toString(),
+          jobTitle: 'Enhanced Resume',
+          processedAt: Timestamp.now(),
+          status: 'completed',
+          jobUrl: jobUrl,
+          pdfBlob: pdfBlob
+        };
+
+        // Update processed resumes and usage count
+        setProcessedResumes(prev => [newResume, ...prev]);
+        setUsageCount(prev => prev + 1);
+        
+        // Reset form
+        setFile(null);
+        setJobUrl('');
+        setShowDataNotice(true);
+
+      } catch (fetchError: any) {
+        if (fetchError.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.');
+        }
+        throw fetchError;
       }
+    } catch (error: any) {
+      console.error('Error details:', error);
+      setError(error.message || 'Please try again in a few moments.');
     } finally {
-      setIsUploading(false);
       setIsProcessing(false);
     }
   };
 
+  // Add download handler
+  const handleDownload = (resume: TempProcessedResume) => {
+    if (resume.pdfBlob) {
+      const downloadUrl = URL.createObjectURL(resume.pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `enhanced_resume_${Date.now()}.pdf`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadUrl);
+    }
+  };
+
+  // Modify the table row in the return statement
   if (!user) {
     return <Navigate to="/login" />;
   }
@@ -433,26 +414,20 @@ export default function Dashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${resume.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                        {resume.status === 'completed' ? (
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                        ) : (
-                          <Clock className="h-4 w-4 mr-1" />
-                        )}
-                        {resume.status === 'completed' ? 'Completed' : 'Processing'}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Completed
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {resume.status === 'completed' && resume.downloadUrl && (
-                        <a
-                          href={resume.downloadUrl}
-                          download
+                      {resume.pdfBlob && (
+                        <button
+                          onClick={() => handleDownload(resume)}
                           className="text-primary-600 hover:text-primary-700 inline-flex items-center"
                         >
                           <Download className="h-4 w-4 mr-1" />
                           Download
-                        </a>
+                        </button>
                       )}
                     </td>
                   </tr>
