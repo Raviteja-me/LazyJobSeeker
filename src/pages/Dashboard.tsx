@@ -34,9 +34,7 @@ interface ProcessedResume {
 }
 
 const ALLOWED_FILE_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  'application/pdf'
 ];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -128,10 +126,20 @@ export default function Dashboard() {
 
   const validateFile = (file: File): string | null => {
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      return 'Please upload a PDF or Word document.';
+      return 'Please upload only PDF files. Other document types are not supported at this time.';
     }
     if (file.size > MAX_FILE_SIZE) {
       return 'File size must be less than 5MB.';
+    }
+    return null;
+  };
+
+  const validateLinkedInUrl = (url: string): string | null => {
+    if (!url) return 'Please enter a job URL.';
+    
+    const linkedInPattern = /^https?:\/\/(?:www\.)?linkedin\.com\/jobs\/view\//i;
+    if (!linkedInPattern.test(url)) {
+      return 'Please enter a valid LinkedIn job URL. Only LinkedIn job postings are supported at this time.';
     }
     return null;
   };
@@ -166,14 +174,21 @@ export default function Dashboard() {
     }
   };
 
+  // Update handleSubmit to include LinkedIn URL validation
   const handleSubmit = async () => {
     if (!user) {
       setError('Please log in to continue.');
       return;
     }
-
+  
     if (!file) {
       setError('Please upload a resume first.');
+      return;
+    }
+  
+    const urlError = validateLinkedInUrl(jobUrl);
+    if (urlError) {
+      setError(urlError);
       return;
     }
 
@@ -289,31 +304,36 @@ export default function Dashboard() {
     }
   };
 
+  // Add this function near other handlers (after validateLinkedInUrl)
+  const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    setJobUrl(url);
+    const urlError = validateLinkedInUrl(url);
+    if (urlError && url !== '') {
+      setError(urlError);
+    } else {
+      setError('');
+    }
+  };
+
   // Modify the table row in the return statement
+  // Add this near the top of the component
   if (!user) {
     return <Navigate to="/login" />;
   }
 
+  // Add error boundary for user email
+  const userDisplayName = user?.email ? user.email.split('@')[0] : 'User';
+
+  // Update the welcome banner to use the safe display name
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50 pt-24">
-      {/* Add Success Message */}
-      {showSuccess && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-400 text-green-700 px-6 py-4 rounded-lg flex items-center space-x-3 animate-bounce shadow-lg z-50">
-          <PartyPopper className="h-6 w-6" />
-          <div>
-            <p className="font-semibold">Success!</p>
-            <p className="text-sm">Your enhanced resume is ready to download</p>
-          </div>
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Welcome Banner */}
         <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Welcome{user.email ? `, ${user.email.split('@')[0]}!` : '!'}
+                Welcome, {userDisplayName}!
               </h1>
               <p className="text-gray-600 mt-2">
                 Upload your resume and paste a job link to get started.
@@ -399,12 +419,11 @@ export default function Dashboard() {
                 <div className="relative">
                   <LinkIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
-                    type="url"
-                    id="jobUrl"
+                    type="text"
                     value={jobUrl}
-                    onChange={(e) => setJobUrl(e.target.value)}
-                    placeholder="Enter the job posting URL"
-                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    onChange={handleJobUrlChange}
+                    placeholder="Paste LinkedIn job URL here"
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -417,6 +436,14 @@ export default function Dashboard() {
           <div className="mb-8 p-4 bg-red-50 rounded-lg flex items-center text-red-700">
             <AlertCircle className="h-5 w-5 mr-2" />
             {error}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {showSuccess && (
+          <div className="mb-8 p-4 bg-green-50 rounded-lg flex items-center text-green-700">
+            <PartyPopper className="h-5 w-5 mr-2" />
+            Your resume has been successfully enhanced! You can download it from the table below.
           </div>
         )}
 

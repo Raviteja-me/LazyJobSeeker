@@ -25,7 +25,9 @@
 .animate-fade-in {
   animation: fadeIn 1s ease-out forwards;
 }
-
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
 .animate-fade-in-delay {
   animation: fadeIn 1s ease-out 0.3s forwards;
   opacity: 0;

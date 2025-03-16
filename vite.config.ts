@@ -7,4 +7,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+      },
+    },
+    // Copy _redirects to build output
+    copyPublicDir: true,
+  },
 });

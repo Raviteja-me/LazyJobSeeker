@@ -3,9 +3,9 @@ import React from 'react';
 const plans = [
   {
     name: 'Starter',
-    price: '$29',
+    price: 'Free',
     features: [
-      '50 job descriptions per month',
+      '3 resumes per day',
       'Basic AI enhancement',
       'Email support',
       'Basic analytics'
@@ -13,9 +13,9 @@ const plans = [
   },
   {
     name: 'Professional',
-    price: '$99',
+    price: '$12',
     features: [
-      '200 job descriptions per month',
+      '10 resumes per day',
       'Advanced AI enhancement',
       'Priority support',
       'Advanced analytics',
@@ -26,7 +26,7 @@ const plans = [
     name: 'Enterprise',
     price: 'Custom',
     features: [
-      'Unlimited job descriptions',
+      'Unlimited resumes',
       'Premium AI enhancement',
       '24/7 dedicated support',
       'Full analytics suite',
