@@ -134,12 +134,11 @@ export default function Dashboard() {
     return null;
   };
 
-  // Keep the first declaration with the URL cleaning logic
   const validateLinkedInUrl = (url: string): string | null => {
     if (!url) return 'Please enter a job URL.';
     
-    // Updated regex to match different LinkedIn URL formats and extract job ID
-    const linkedInPattern = /^(https?:\/\/(?:www\.)?linkedin\.com\/jobs\/(?:view|search)\/?(?:.*\?currentJobId=)?)(\d+)/i;
+    // Updated regex to match different LinkedIn URL formats
+    const linkedInPattern = /^https?:\/\/(?:www\.|sg\.)?linkedin\.com\/jobs\/(?:view|search)\/[^?]+(?:\d+)/i;
     if (!linkedInPattern.test(url)) {
       return 'Please enter a valid LinkedIn job URL. Only LinkedIn job postings are supported at this time.';
     }
@@ -147,15 +146,13 @@ export default function Dashboard() {
     return null;
   };
   
-  // Update handleJobUrlChange to clean the URL
   const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     
-    // Clean the URL before setting state
-    const cleanedUrl = url.replace(
-      /^(https?:\/\/(?:www\.)?linkedin\.com\/jobs\/(?:view|search)\/?(?:.*\?currentJobId=)?)(\d+).*/i,
-      'https://www.linkedin.com/jobs/view/$2/'
-    );
+    // Clean the URL before setting state - remove query parameters and trailing slashes
+    const cleanedUrl = url
+      .replace(/\?.*$/, '') // Remove query parameters
+      .replace(/\/$/, ''); // Remove trailing slash
     
     setJobUrl(cleanedUrl);
     const urlError = validateLinkedInUrl(cleanedUrl);
