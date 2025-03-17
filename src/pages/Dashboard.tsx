@@ -134,14 +134,36 @@ export default function Dashboard() {
     return null;
   };
 
+  // Keep the first declaration with the URL cleaning logic
   const validateLinkedInUrl = (url: string): string | null => {
     if (!url) return 'Please enter a job URL.';
     
-    const linkedInPattern = /^https?:\/\/(?:www\.)?linkedin\.com\/jobs\/view\//i;
+    // Updated regex to match different LinkedIn URL formats and extract job ID
+    const linkedInPattern = /^(https?:\/\/(?:www\.)?linkedin\.com\/jobs\/(?:view|search)\/?(?:.*\?currentJobId=)?)(\d+)/i;
     if (!linkedInPattern.test(url)) {
       return 'Please enter a valid LinkedIn job URL. Only LinkedIn job postings are supported at this time.';
     }
+    
     return null;
+  };
+  
+  // Update handleJobUrlChange to clean the URL
+  const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    
+    // Clean the URL before setting state
+    const cleanedUrl = url.replace(
+      /^(https?:\/\/(?:www\.)?linkedin\.com\/jobs\/(?:view|search)\/?(?:.*\?currentJobId=)?)(\d+).*/i,
+      'https://www.linkedin.com/jobs/view/$2/'
+    );
+    
+    setJobUrl(cleanedUrl);
+    const urlError = validateLinkedInUrl(cleanedUrl);
+    if (urlError && cleanedUrl !== '') {
+      setError(urlError);
+    } else {
+      setError('');
+    }
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -304,20 +326,19 @@ export default function Dashboard() {
     }
   };
 
-  // Add this function near other handlers (after validateLinkedInUrl)
-  const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    setJobUrl(url);
-    const urlError = validateLinkedInUrl(url);
-    if (urlError && url !== '') {
-      setError(urlError);
-    } else {
-      setError('');
-    }
-  };
+  // Remove this commented-out duplicate declaration
+  // const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const url = e.target.value;
+  //   setJobUrl(url);
+  //   const urlError = validateLinkedInUrl(url);
+  //   if (urlError && url !== '') {
+  //     setError(urlError);
+  //   } else {
+  //     setError('');
+  //   }
+  // };
 
   // Modify the table row in the return statement
-  // Add this near the top of the component
   if (!user) {
     return <Navigate to="/login" />;
   }
