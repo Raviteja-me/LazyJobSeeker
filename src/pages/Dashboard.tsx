@@ -419,7 +419,7 @@ export default function Dashboard() {
                       <input
                         type="file"
                         className="hidden"
-                        accept=".pdf,.doc,.docx"
+                        accept=".pdf,.doc,.docx,.odt,.txt"
                         onChange={handleFileInput}
                       />
                     </label>
