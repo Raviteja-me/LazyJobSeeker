@@ -14,7 +14,9 @@ import {
   AlertTriangle,
   XCircle,
   Shield,
-  PartyPopper
+  PartyPopper,
+  Sparkles,
+  Edit3
 } from 'lucide-react';
 import { db, storage } from '../lib/firebase';
 import { collection, addDoc, query, where, orderBy, onSnapshot, Timestamp, updateDoc, doc, setDoc } from 'firebase/firestore';
@@ -61,6 +63,7 @@ export default function Dashboard() {
   const [dailyUsageCount, setDailyUsageCount] = useState(0);
   const [file, setFile] = useState<File | null>(null);
   const [jobUrl, setJobUrl] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -139,7 +142,7 @@ export default function Dashboard() {
   };
 
   const validateLinkedInUrl = (url: string): string | null => {
-    if (!url) return 'Please enter a job URL.';
+    if (!url) return null; // Allow empty URL
     
     // Updated regex to match different LinkedIn URL formats
     const linkedInPattern = /^https?:\/\/(?:www\.|sg\.)?linkedin\.com\/jobs\/(?:view|search)\/[^?]+(?:\d+)/i;
@@ -159,12 +162,16 @@ export default function Dashboard() {
       .replace(/\/$/, ''); // Remove trailing slash
     
     setJobUrl(cleanedUrl);
-    const urlError = validateLinkedInUrl(cleanedUrl);
-    if (urlError && cleanedUrl !== '') {
-      setError(urlError);
-    } else {
-      setError('');
-    }
+    // Clear job description when URL is entered
+    setJobDescription('');
+    setError(validateLinkedInUrl(cleanedUrl));
+  };
+
+  const handleJobDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setJobDescription(e.target.value);
+    // Clear job URL when description is entered
+    setJobUrl('');
+    setError(''); // Clear any URL-related errors when description is entered
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -204,19 +211,19 @@ export default function Dashboard() {
       return;
     }
   
-    if (!file) {
-      setError('Please upload a resume first.');
+    if (!file && !jobUrl && !jobDescription) {
+      setError('Please upload a resume and provide either a job URL or a job description.');
+      return;
+    }
+
+    if (jobUrl && jobDescription) {
+      setError('Please provide either a job URL or a job description, not both.');
       return;
     }
   
     const urlError = validateLinkedInUrl(jobUrl);
-    if (urlError) {
+    if (jobUrl && urlError) {
       setError(urlError);
-      return;
-    }
-
-    if (!jobUrl) {
-      setError('Please enter a job URL.');
       return;
     }
 
@@ -250,11 +257,18 @@ export default function Dashboard() {
       });
 
       const formData = new FormData();
-      formData.append('cv', file);
-      formData.append('url', jobUrl);
+      if (file) {
+        formData.append('cv', file);
+      }
+      if (jobUrl) {
+        formData.append('url', jobUrl);
+      }
+      if (jobDescription) {
+        formData.append('jobDescription', jobDescription);
+      }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+      const timeoutId = setTimeout(() => controller.abort(), 120000); // Increased timeout to 2 minutes
 
       try {
         const response = await fetch(WEBHOOK_URL, {
@@ -297,6 +311,7 @@ export default function Dashboard() {
         // Reset form
         setFile(null);
         setJobUrl('');
+        setJobDescription('');
         setShowDataNotice(true);
 
       } catch (fetchError: any) {
@@ -358,7 +373,7 @@ export default function Dashboard() {
                 Welcome, {userDisplayName}!
               </h1>
               <p className="text-gray-600 mt-2">
-                Upload your resume and paste a job link to get started.
+                Upload your resume and paste a job link or description to get started.
               </p>
             </div>
             <Brain className="h-12 w-12 text-primary-500" />
@@ -430,24 +445,40 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Job URL Section */}
+          {/* Job URL and Description Section */}
           <div className="bg-white rounded-lg shadow-enhanced p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Job URL</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Job Details</h2>
             <div className="space-y-4">
               <div>
                 <label htmlFor="jobUrl" className="block text-sm font-medium text-gray-700 mb-1">
-                  Paste Job URL Here
+                  Paste LinkedIn Job URL Here
                 </label>
                 <div className="relative">
                   <LinkIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
+                    id="jobUrl"
                     value={jobUrl}
                     onChange={handleJobUrlChange}
                     placeholder="Paste LinkedIn job URL here"
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${jobDescription ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={!!jobDescription}
                   />
                 </div>
+              </div>
+              <div>
+                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                  Or, Paste Job Description Here
+                </label>
+                <textarea
+                  id="jobDescription"
+                  value={jobDescription}
+                  onChange={handleJobDescriptionChange}
+                  rows={4}
+                  placeholder="Paste the job description here"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${jobUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={!!jobUrl}
+                />
               </div>
             </div>
           </div>
@@ -473,7 +504,7 @@ export default function Dashboard() {
         <div className="mb-8">
           <button
             onClick={handleSubmit}
-            disabled={isProcessing || isUploading || !file || !jobUrl || dailyUsageCount >= maxUsage}
+            disabled={isProcessing || isUploading || (!file && !jobUrl && !jobDescription) || dailyUsageCount >= maxUsage}
             className={`w-full py-4 px-6 rounded-lg text-white font-medium flex items-center justify-center space-x-2
               ${isProcessing || isUploading || dailyUsageCount >= maxUsage ? 'bg-gray-400' : 'bg-gradient-primary hover:opacity-90'} 
               transform hover:scale-[1.02] transition-all shadow-enhanced`}
@@ -495,13 +526,18 @@ export default function Dashboard() {
         {/* Usage Tracker */}
         <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">Daily Resume Processing Limit</h3>
+            <h3 className="font-semibold text-gray-900">
+              Daily Resume Processing Limit
+            </h3>
             <span className="text-sm text-gray-600">{dailyUsageCount}/{maxUsage} resumes today</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full">
+          <div className="h-2 rounded-full overflow-hidden">
             <div
-              className="h-2 bg-primary-500 rounded-full transition-all duration-300"
-              style={{ width: `${(dailyUsageCount / maxUsage) * 100}%` }}
+              className="h-full transition-all duration-300"
+              style={{
+                width: `${(dailyUsageCount / maxUsage) * 100}%`,
+                backgroundColor: (dailyUsageCount / maxUsage) * 100 < 33 ? '#4ade80' : (dailyUsageCount / maxUsage) * 100 < 66 ? '#facc15' : '#f87171'
+              }}
             />
           </div>
         </div>
