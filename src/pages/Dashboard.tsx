@@ -34,7 +34,11 @@ interface ProcessedResume {
 }
 
 const ALLOWED_FILE_TYPES = [
-  'application/pdf'
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.oasis.opendocument.text',
+  'text/plain'
 ];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
