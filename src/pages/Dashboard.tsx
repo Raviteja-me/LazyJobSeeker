@@ -22,7 +22,10 @@ import { db, storage } from '../lib/firebase';
 import { collection, addDoc, query, where, orderBy, onSnapshot, Timestamp, updateDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-const WEBHOOK_URL = 'https://primary-production-d5c0.up.railway.app/webhook/aac328d1-79db-4dfd-9b25-b3c926ddc1a9';
+// Remove the WEBHOOK_URL constant and replace with:
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY = 5000; // 5 seconds
 
 interface ProcessedResume {
   id: string;
@@ -241,21 +244,6 @@ export default function Dashboard() {
     setError('');
 
     try {
-      // Add this at the start of the try block
-      const today = new Date().toISOString().split('T')[0];
-      const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
-      
-      await updateDoc(dailyUsageRef, {
-        count: dailyUsageCount + 1,
-        lastUpdated: Timestamp.now()
-      }).catch(() => {
-        // If document doesn't exist, create it
-        setDoc(dailyUsageRef, {
-          count: 1,
-          lastUpdated: Timestamp.now()
-        });
-      });
-
       const formData = new FormData();
       if (file) {
         formData.append('cv', file);
@@ -267,62 +255,115 @@ export default function Dashboard() {
         formData.append('jobDescription', jobDescription);
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000); // Increased timeout to 2 minutes
+      let retryCount = 0;
+      let lastError: Error | null = null;
 
-      try {
-        const response = await fetch(WEBHOOK_URL, {
-          method: 'POST',
-          body: formData,
-          signal: controller.signal
-        });
+      while (retryCount < MAX_RETRIES) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-        clearTimeout(timeoutId);
+          const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+          });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Server error: ${errorText || response.statusText}`);
-        }
+          clearTimeout(timeoutId);
 
-        // Get the PDF blob from response
-        const pdfBlob = await response.blob();
-        if (!pdfBlob || pdfBlob.size === 0) {
-          throw new Error('Received empty response from server');
-        }
+          if (!response.ok) {
+            const errorText = await response.text();
+            
+            // Handle specific HTTP status codes
+            switch (response.status) {
+              case 503:
+              case 504:
+                throw new Error('Server is starting up, retrying...');
+              case 429:
+                throw new Error('Too many requests, please try again later.');
+              default:
+                throw new Error(`Server error: ${errorText || response.statusText}`);
+            }
+          }
 
-        // Create temporary resume entry
-        const newResume: TempProcessedResume = {
-          id: Date.now().toString(),
-          jobTitle: 'Enhanced Resume',
-          processedAt: Timestamp.now(),
-          status: 'completed',
-          jobUrl: jobUrl,
-          pdfBlob: pdfBlob
-        };
+          const pdfBlob = await response.blob();
+          if (!pdfBlob || pdfBlob.size === 0) {
+            throw new Error('Received empty response from server');
+          }
 
-        // Update processed resumes and usage count
-        setProcessedResumes(prev => [newResume, ...prev]);
-        setUsageCount(prev => prev + 1);
+          // Only update usage count after confirming valid response
+          const today = new Date().toISOString().split('T')[0];
+          const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
+          
+          await updateDoc(dailyUsageRef, {
+            count: dailyUsageCount + 1,
+            lastUpdated: Timestamp.now()
+          }).catch(() => {
+            // If document doesn't exist, create it
+            setDoc(dailyUsageRef, {
+              count: 1,
+              lastUpdated: Timestamp.now()
+            });
+          });
+
+          // Create new resume entry
+          const newResume: TempProcessedResume = {
+            id: Date.now().toString(),
+            jobTitle: 'Enhanced Resume',
+            processedAt: Timestamp.now(),
+            status: 'completed',
+            jobUrl: jobUrl,
+            pdfBlob: pdfBlob
+          };
+
+          setProcessedResumes(prev => [newResume, ...prev]);
+          setUsageCount(prev => prev + 1);
+          setDailyUsageCount(prev => prev + 1);
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 3000);
+          setFile(null);
+          setJobUrl('');
+          setJobDescription('');
+          setShowDataNotice(true);
+          return; // Success! Exit the retry loop
         
-        // Show success message
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
+        } catch (fetchError: any) {
+          lastError = fetchError;
+          
+          if (fetchError.name === 'AbortError') {
+            setError('Request timed out. Retrying...');
+          } else if (fetchError.message.includes('Server is starting up')) {
+            setError('Server is warming up. Retrying in a few seconds...');
+          } else if (!navigator.onLine) {
+            setError('No internet connection. Please check your network and try again.');
+            break; // Don't retry if there's no internet
+          } else {
+            setError(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+          }
 
-        // Reset form
-        setFile(null);
-        setJobUrl('');
-        setJobDescription('');
-        setShowDataNotice(true);
-
-      } catch (fetchError: any) {
-        if (fetchError.name === 'AbortError') {
-          throw new Error('Request timed out. Please try again.');
+          // Exponential backoff
+          const delay = INITIAL_RETRY_DELAY * Math.pow(2, retryCount);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          retryCount++;
         }
-        throw fetchError;
       }
+
+      // If we got here, all retries failed
+      if (lastError) {
+        throw lastError;
+      }
+
     } catch (error: any) {
       console.error('Error details:', error);
-      setError(error.message || 'Please try again in a few moments.');
+      
+      // Final error handling
+      if (!navigator.onLine) {
+        setError('Please check your internet connection and try again.');
+      } else if (error.message.includes('Server is starting up')) {
+        setError('Server is temporarily unavailable. Please try again in a few moments.');
+      } else {
+        setError(error.message || 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsProcessing(false);
     }
