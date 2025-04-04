@@ -256,26 +256,39 @@ export default function Dashboard() {
       }
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180000); // 3 minutes timeout
+      const timeoutId = setTimeout(() => controller.abort(), 180000); // Keep your 3 minutes timeout
 
+      console.log('Sending request to webhook:', WEBHOOK_URL);
+      
+      // Add mode: 'cors' explicitly and credentials
       const response = await fetch(WEBHOOK_URL, {
         method: 'POST',
         body: formData,
-        signal: controller.signal
+        signal: controller.signal,
+        mode: 'cors',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/pdf,*/*'
+        }
       });
 
       clearTimeout(timeoutId);
+      
+      console.log('Response received:', response.status, response.statusText);
+      console.log('Content-Type:', response.headers.get('content-type'));
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Error response body:', errorText);
         throw new Error(`Server error: ${errorText || response.statusText}`);
       }
 
+      // Rest of your code remains the same
       const pdfBlob = await response.blob();
       if (!pdfBlob || pdfBlob.size === 0) {
         throw new Error('Received empty response from server');
       }
-
+      
       // Update usage count after confirming valid response
       const today = new Date().toISOString().split('T')[0];
       const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
