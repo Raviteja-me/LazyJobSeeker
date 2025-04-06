@@ -13,9 +13,22 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    chunkSizeWarningLimit: 1000, // Increase warning limit
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')
+      },
+      output: {
+        manualChunks: {
+          'lottie': [
+            '@dotlottie/player-component'
+          ],
+          'vendor': [
+            'react',
+            'react-dom',
+            'react-router-dom'
+          ]
+        }
       }
     }
   }

@@ -14,6 +14,7 @@ import {
 import { useAuth } from './context/AuthContext';
 
 // Import pages
+// Update import paths without extensions
 import HomePage from './pages/home';
 import MagicCVPage from './pages/Dashboard';
 import AngelPage from './pages/angel';
