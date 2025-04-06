@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '@dotlottie/player-component';
+import { Brain, Coffee, CheckCircle, ArrowRight, Star, Target, Shield } from 'lucide-react';
 
 declare global {
   namespace JSX {
@@ -26,9 +27,10 @@ export default function Home() {
     };
   }, []);
 
-  if (user) {
-    return <Navigate to="/dashboard" />;
-  }
+  // Remove the redirect
+  // if (user) {
+  //   return <Navigate to="/dashboard" />;
+  // }
 
   return (
     <div className="min-h-screen bg-black overflow-hidden">
@@ -57,103 +59,131 @@ export default function Home() {
         </div>
 
         <div className="text-center z-10 mt-8">
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-  Work Smarter,<br/>Not Harder
-</h1>
-
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12">
-            Transform your Resume/CV optimized and tailor-made specifically for your dream job..
-          </p>
+          <div className="mb-6 inline-block">
+            <span className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-white px-6 py-2 rounded-full text-sm font-semibold border border-purple-500/30">
+              🎯 Its not just another job tool - I am your unfair advantage in the job market.
+            </span>
+          </div>
           
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
-            <Link
-              to="/login"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl relative group overflow-hidden transform hover:scale-105 transition-all duration-200"
-            >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <div className="relative flex items-center justify-center text-white font-bold text-lg">
-                Get Started Free
-                <svg className="w-6 h-6 ml-2 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-              </div>
-            </Link>
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            Work Smart<br/>Not Hard
+          </h1>
 
-            <Link
-              to="/pricing"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl relative group overflow-hidden transform hover:scale-105 transition-all duration-200 border border-gray-700"
-            >
-              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-              <div className="relative flex items-center justify-center text-white font-bold text-lg">
-                View Pricing
-                <svg className="w-6 h-6 ml-2 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                </svg>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
+          <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12">
+          Two Powerful Tools One Mission 
+          </p>
 
-      {/* Features Section */}
-      <div className="bg-white py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-16">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">AI-Powered Resume Enhancement</h2>
-              <p className="text-gray-600 mb-4">
-                Our advanced AI technology analyzes job descriptions and optimizes your resume in real-time. Get tailored suggestions that highlight your relevant skills and experience, increasing your chances of landing interviews.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Automated keyword optimization
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  ATS-friendly formatting
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Industry-specific suggestions
-                </li>
-              </ul>
+          {/* Product Cards */}
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-12">
+            {/* Magic CV Card */}
+            <div className="group relative bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-2xl p-8 backdrop-blur-xl border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <Brain className="w-10 h-10 text-purple-400" />
+                  <span className="text-purple-400 text-sm">90% Success Rate</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">Magic CV</h3>
+                <p className="text-gray-300 mb-6">
+                  AI-powered resume optimizer that:
+                </p>
+                <ul className="text-gray-400 text-left space-y-3 mb-6">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-purple-400" />
+                    Tailors your CV to job requirements
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-purple-400" />
+                    Beats ATS systems with smart keywords
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-purple-400" />
+                    Increases interview callback rate
+                  </li>
+                </ul>
+                <Link 
+                  to={user ? "/dashboard" : "/login"} 
+                  className="inline-flex items-center text-purple-400 hover:text-purple-300"
+                >
+                  {user ? "Try Magic CV" : "Sign in to Use"} <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </div>
             </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Smart Cover Letter Generation</h2>
-              <p className="text-gray-600 mb-4">
-                Create compelling cover letters in minutes with our AI-powered system. Our technology understands job requirements and crafts personalized cover letters that showcase your unique value proposition.
-              </p>
-              <ul className="space-y-3">
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Personalized content generation
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Professional tone and style
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Company-specific customization
-                </li>
-              </ul>
+
+            {/* Angel Assistant Card */}
+            <div className="group relative bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-2xl p-8 backdrop-blur-xl border border-blue-500/20 hover:border-blue-500/40 transition-all duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-cyan-600/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative">
+                <div className="flex items-center justify-between mb-4">
+                  <Coffee className="w-10 h-10 text-blue-400" />
+                  <span className="text-blue-400 text-sm">Real-time Assistant</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">Angel Assistant</h3>
+                <p className="text-gray-300 mb-6">
+                  Your invisible interview companion:
+                </p>
+                <ul className="text-gray-400 text-left space-y-3 mb-6">
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-blue-400" />
+                    Real-time interview assistance
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-blue-400" />
+                    100% undetectable during calls
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2 text-blue-400" />
+                    AI-powered response suggestions
+                  </li>
+                </ul>
+                <Link 
+                  to={user ? "/angel" : "/login"} 
+                  className="inline-flex items-center text-blue-400 hover:text-blue-300"
+                >
+                  {user ? "Download Angel" : "Sign in to Download"} <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </div>
             </div>
           </div>
+
+          {/* Enhanced CTA Section */}
+          <div className="flex flex-col items-center gap-6 mb-20">
+            {!user ? (
+              <>
+                <Link
+                  to="/login"
+                  className="group relative px-12 py-4 bg-white text-black rounded-lg overflow-hidden transition-all duration-300 hover:text-white"
+                >
+                  <span className="absolute inset-0 w-0 bg-gradient-to-r from-purple-600 to-blue-600 transition-all duration-300 ease-out group-hover:w-full"></span>
+                  <span className="relative flex items-center text-lg font-bold">
+                    Get Started Free
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </span>
+                </Link>
+                <p className="text-gray-400 text-sm">
+                  Join thousands who transformed their job search
+                </p>
+              </>
+            ) : (
+              <div className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg">
+                <span className="text-white">Welcome back, {user.email?.split('@')[0]}!</span>
+              </div>
+            )}
+          </div>
+
+          {/* Social Proof */}
+          <div className="flex flex-wrap justify-center gap-8 text-gray-400 text-sm">
+            
+            
+            <div className="flex items-center">
+              <Shield className="w-4 h-4 text-purple-400 mr-2" />
+              <span>100% Privacy Guaranteed</span>
+            </div>
+          </div>
         </div>
+
+        {/* Warning Banner */}
+        
       </div>
     </div>
   );

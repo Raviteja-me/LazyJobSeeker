@@ -12,5 +12,15 @@ service firebase.storage {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       allow write: if isAuthenticated() && request.auth.uid == userId;
     }
+
+    // Allow public read access to Angel application files
+    match /angel-ai-assistant-1.0.0-arm64-1.dmg {
+      allow read: if true;  // Public read access
+    }
+
+    // For future Windows version
+    match /angel-ai-assistant-windows.exe {
+      allow read: if true;  // Public read access
+    }
   }
 }

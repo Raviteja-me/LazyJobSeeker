@@ -19,6 +19,7 @@ export default function Login() {
     return <Navigate to="/dashboard" />;
   }
 
+  // Remove automatic redirect to dashboard after login
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -27,10 +28,10 @@ export default function Login() {
 
       if (isRegistering) {
         await createUserWithEmailAndPassword(auth, email, password);
-        navigate('/dashboard');
+        navigate('/'); // Return to home instead of dashboard
       } else {
         await signIn(email, password);
-        navigate('/dashboard');
+        navigate('/'); // Return to home instead of dashboard
       }
     } catch (error: any) {
       console.error('Auth error:', error);
@@ -45,7 +46,7 @@ export default function Login() {
       setError('');
       setLoading(true);
       await signInWithGoogle();
-      navigate('/dashboard');
+      navigate('/'); // Return to home instead of dashboard
     } catch (error: any) {
       console.error('Google sign-in error:', error);
       setError(error.message || 'Failed to sign in with Google');
