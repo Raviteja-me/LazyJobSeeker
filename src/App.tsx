@@ -3,10 +3,6 @@ import { Routes, Route, Link, useNavigate, Navigate } from 'react-router-dom';
 import {
   Brain,
   LogOut,
-  HelpCircle,
-  Layout,
-  Home,
-  Coffee,
   LogIn,
   Menu,
   X
@@ -14,14 +10,12 @@ import {
 import { useAuth } from './context/AuthContext';
 
 // Import pages
-// Update import paths without extensions
 import HomePage from './pages/home';
-import MagicCVPage from './pages/Dashboard';
+import MagicCVPage from './pages/MagicCV';  // Updated import
 import AngelPage from './pages/angel';
 import LoginPage from './pages/login';
 import SupportPage from './pages/support';
 import Footer from './components/Footer';
-
 
 function App() {
   const { user, signOut } = useAuth();
