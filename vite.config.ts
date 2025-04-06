@@ -1,9 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
+  },
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
@@ -13,7 +16,15 @@ export default defineConfig({
         main: 'index.html',
       },
     },
-    // Copy _redirects to build output
-    copyPublicDir: true,
-  },
+    outDir: 'dist',
+    emptyOutDir: true,
+    chunkSizeWarningLimit: 1000, // Increase the warning limit to 1000kb
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'lottie-player': ['@dotlottie/player-component'],
+        }
+      }
+    }
+  }
 });

@@ -13,14 +13,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 
-// Import pages
-// Fix the import paths with correct case sensitivity
-import HomePage from './pages/home';
-import MagicCVPage from './pages/Dashboard';
-import AngelPage from './pages/angel';  // Changed from Angel to angel
-import LoginPage from './pages/login';
-import SupportPage from './pages/support';
-import Footer from './components/Footer';
+// Import pages with .tsx extensions
+import HomePage from './pages/home.tsx';
+import MagicCVPage from './pages/Dashboard.tsx';
+import AngelPage from './pages/angel.tsx';
+import LoginPage from './pages/login.tsx';
+import SupportPage from './pages/support.tsx';
+import Footer from './components/Footer.tsx';
 
 
 function App() {
