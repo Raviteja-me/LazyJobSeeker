@@ -12,6 +12,30 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      external: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react-router-dom'
+      ],
+      output: {
+        globals: {
+          'react': 'React',
+          'react-dom': 'ReactDOM',
+          'react-dom/client': 'ReactDOMClient',
+          'react-router-dom': 'ReactRouterDOM'
+        },
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('firebase')) return 'firebase';
+            if (id.includes('@dotlottie')) return 'lottie';
+            return 'vendor';
+          }
+        }
+      }
+    }
   }
 });
