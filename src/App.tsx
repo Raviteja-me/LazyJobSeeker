@@ -10,11 +10,11 @@ import {
 import { useAuth } from './context/AuthContext';
 
 // Import pages
-import HomePage from './pages/home';
-import MagicCVPage from './pages/MagicCV';  // Updated import
-import AngelPage from './pages/angel';
-import LoginPage from './pages/login';
-import SupportPage from './pages/support';
+import HomePage from './pages/home.tsx';
+import MagicCVPage from './pages/MagicCV.tsx';  // Updated import
+import AngelPage from './pages/angel.tsx';
+import LoginPage from './pages/login.tsx';
+import SupportPage from './pages/support.tsx';
 import Footer from './components/Footer';
 
 function App() {
