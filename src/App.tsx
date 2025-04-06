@@ -14,13 +14,12 @@ import {
 import { useAuth } from './context/AuthContext';
 
 // Import pages
-// Fix imports with correct file extensions and case sensitivity
-import HomePage from './pages/home.tsx';
-import MagicCVPage from './pages/Dashboard.tsx';  // Match the actual filename case
-import AngelPage from './pages/angel.tsx';
-import LoginPage from './pages/login.tsx';
-import SupportPage from './pages/support.tsx';
-import Footer from './components/Footer.tsx';
+import HomePage from './pages/home';
+import MagicCVPage from './pages/Dashboard';
+import AngelPage from './pages/angel';
+import LoginPage from './pages/login';
+import SupportPage from './pages/support';
+import Footer from './components/Footer';
 
 
 function App() {
