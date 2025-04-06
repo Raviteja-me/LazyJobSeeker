@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 
-// Import pages with .tsx extensions
-import HomePage from './pages/Home';
+// Import pages
+import HomePage from './pages/home';
 import MagicCVPage from './pages/Dashboard';
-import AngelPage from './pages/Angel';
-import LoginPage from './pages/Login';
-import SupportPage from './pages/Support';
+import AngelPage from './pages/angel';
+import LoginPage from './pages/login';
+import SupportPage from './pages/support';
 import Footer from './components/Footer.tsx';
 
 
