@@ -59,9 +59,62 @@ interface UserDailyUsage {
   count: number;
 }
 
+// Add after other interfaces
+interface ResumeStyle {
+  id: string;
+  name: string;
+  description: string;
+  preview?: string;
+}
+
+const RESUME_STYLES: ResumeStyle[] = [
+  {
+    id: 'blackmagic',
+    name: 'Black Magic',
+    description: 'Bold and sophisticated dark theme design'
+  },
+  {
+    id: 'classic',
+    name: 'Classic',
+    description: 'Traditional and professional layout'
+  },
+  {
+    id: 'decor',
+    name: 'Decor',
+    description: 'Elegantly decorated with stylish elements'
+  },
+  {
+    id: 'elegant',
+    name: 'Elegant',
+    description: 'Refined and graceful presentation'
+  },
+  {
+    id: 'fantacy',
+    name: 'Fantasy',
+    description: 'Creative and imaginative design'
+  },
+  {
+    id: 'simple',
+    name: 'Simple',
+    description: 'Clean and minimalist approach'
+  },
+  {
+    id: 'straight',
+    name: 'Straight',
+    description: 'Direct and structured format'
+  },
+  {
+    id: 'modern',
+    name: 'Modern',
+    description: 'Contemporary and sleek design'
+  }
+];
+
 export default function Dashboard() {
   const [showSuccess, setShowSuccess] = useState(false);
   const { user } = useAuth();
+  // Add selectedStyle state initialization
+  const [selectedStyle, setSelectedStyle] = useState<string>('classic');
   // Add dailyUsageCount state
   const [dailyUsageCount, setDailyUsageCount] = useState(0);
   const [file, setFile] = useState<File | null>(null);
@@ -147,9 +200,9 @@ export default function Dashboard() {
   const validateLinkedInUrl = (url: string): string | null => {
     if (!url) return null; // Allow empty URL
     
-    // Updated regex to match different LinkedIn URL formats
-    const linkedInPattern = /^https?:\/\/(?:www\.|sg\.)?linkedin\.com\/jobs\/(?:view|search)\/[^?]+(?:\d+)/i;
-    if (!linkedInPattern.test(url)) {
+    // Extract job ID from either format
+    const jobIdMatch = url.match(/(?:currentJobId=|jobs\/view\/)(\d+)/);
+    if (!jobIdMatch) {
       return 'Please enter a valid LinkedIn job URL. Only LinkedIn job postings are supported at this time.';
     }
     
@@ -159,15 +212,20 @@ export default function Dashboard() {
   const handleJobUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value;
     
-    // Clean the URL before setting state - remove query parameters and trailing slashes
-    const cleanedUrl = url
-      .replace(/\?.*$/, '') // Remove query parameters
-      .replace(/\/$/, ''); // Remove trailing slash
+    // Extract job ID and transform URL to canonical format
+    const jobIdMatch = url.match(/(?:currentJobId=|jobs\/view\/)(\d+)/);
     
-    setJobUrl(cleanedUrl);
+    if (jobIdMatch) {
+      const jobId = jobIdMatch[1];
+      const canonicalUrl = `https://www.linkedin.com/jobs/view/${jobId}`;
+      setJobUrl(canonicalUrl);
+    } else {
+      setJobUrl(url);
+    }
+    
     // Clear job description when URL is entered
     setJobDescription('');
-    setError(validateLinkedInUrl(cleanedUrl));
+    setError(validateLinkedInUrl(url));
   };
 
   const handleJobDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -213,9 +271,20 @@ export default function Dashboard() {
       setError('Please log in to continue.');
       return;
     }
-  
-    if (!file && !jobUrl && !jobDescription) {
-      setError('Please upload a resume and provide either a job URL or a job description.');
+
+    // Check for all required elements
+    if (!file) {
+      setError('Please upload your resume to continue.');
+      return;
+    }
+
+    if (!jobUrl && !jobDescription) {
+      setError('Please provide either a job URL or job description.');
+      return;
+    }
+
+    if (!selectedStyle) {
+      setError('Please select a resume style to continue.');
       return;
     }
 
@@ -254,11 +323,14 @@ export default function Dashboard() {
       if (jobDescription) {
         formData.append('jobDescription', jobDescription);
       }
+      // Add selected style to form data
+      formData.append('style', selectedStyle); // This adds the selected style ID (e.g., 'blackmagic', 'elegant', etc.)
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180000); // Keep your 3 minutes timeout
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
 
       console.log('Sending request to webhook:', WEBHOOK_URL);
+      console.log('Selected style:', selectedStyle); // Add logging for debugging
       
       // Add mode: 'cors' explicitly and credentials
       const response = await fetch(WEBHOOK_URL, {
@@ -411,36 +483,53 @@ export default function Dashboard() {
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           {/* Resume Upload Section */}
-          <div className="bg-white rounded-lg shadow-enhanced p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Your Resume</h2>
+          <div className="bg-white rounded-xl shadow-enhanced p-6 transform hover:scale-[1.01] transition-all">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-primary-50 p-2 rounded-lg">
+                <Upload className="h-5 w-5 text-primary-500" />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Upload Your Resume</h2>
+            </div>
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors
-                ${dragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300'}
-                ${file ? 'bg-green-50' : ''}`}
+              className={`relative border-2 border-dashed rounded-xl transition-all min-h-[140px] flex items-center justify-center
+                ${dragActive ? 'border-primary-500 bg-primary-50/30' : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50/50'}
+                ${file ? 'bg-green-50/20 border-green-400 p-4' : 'p-6'}`}
             >
               {file ? (
-                <div className="flex items-center justify-center space-x-2">
-                  <FileText className="h-6 w-6 text-green-500" />
-                  <span className="text-green-700">{file.name}</span>
-                  <button
-                    onClick={() => setFile(null)}
-                    className="ml-2 p-1 text-red-500 hover:text-red-700 transition-colors rounded-full hover:bg-red-50"
-                    title="Remove file"
-                  >
-                    <XCircle className="h-5 w-5" />
-                  </button>
+                <div className="w-full max-w-md mx-auto">
+                  <div className="flex items-center bg-white rounded-xl p-4 border border-primary-100 hover:border-primary-200 transition-all">
+                    <div className="bg-primary-50 p-2 rounded-lg">
+                      <FileText className="h-5 w-5 text-primary-500 flex-shrink-0" />
+                    </div>
+                    <span className="text-gray-700 font-medium truncate ml-3">{file.name}</span>
+                    <button
+                      onClick={() => setFile(null)}
+                      className="ml-auto flex items-center px-3 py-1.5 text-primary-600 hover:text-primary-700 transition-colors rounded-lg hover:bg-primary-50 text-sm"
+                    >
+                      <Edit3 className="h-4 w-4 mr-1" />
+                      Change
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center mt-3">
+                    <p className="text-xs text-gray-500">
+                      File ready for processing
+                    </p>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-                  <div>
-                    <p className="text-gray-600">Drag and drop your resume here, or</p>
-                    <label className="text-primary-600 hover:text-primary-700 cursor-pointer">
-                      browse to upload
+                <div className="text-center max-w-sm mx-auto">
+                  <div className="bg-primary-50/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <Upload className="h-8 w-8 text-primary-500" />
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-gray-700 font-medium">Drag and drop your resume here, or</p>
+                    <label className="inline-flex items-center px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 cursor-pointer transition-all hover:shadow-md">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Browse to upload
                       <input
                         type="file"
                         className="hidden"
@@ -448,51 +537,99 @@ export default function Dashboard() {
                         onChange={handleFileInput}
                       />
                     </label>
+                    <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                      <span className="px-2 py-1 bg-gray-50 rounded-full">PDF</span>
+                      <span className="px-2 py-1 bg-gray-50 rounded-full">DOC</span>
+                      <span className="px-2 py-1 bg-gray-50 rounded-full">DOCX</span>
+                      <span className="text-gray-400">Max 5MB</span>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500">Supported formats: PDF, Word (max 5MB)</p>
+                </div>
+              )}
+              {dragActive && (
+                <div className="absolute inset-0 border-2 border-primary-500 rounded-xl bg-primary-50/20 flex items-center justify-center">
+                  <div className="text-primary-500 font-medium">Drop your file here</div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Job URL and Description Section */}
-          <div className="bg-white rounded-lg shadow-enhanced p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Job Details</h2>
-            <div className="space-y-4">
+          {/* Job Details Section */}
+          <div className="bg-white rounded-xl shadow-enhanced p-8 transform hover:scale-[1.01] transition-all">
+            <div className="flex items-center space-x-3 mb-6">
+              <Brain className="h-6 w-6 text-primary-500" />
+              <h2 className="text-xl font-bold text-gray-900">Job Details</h2>
+            </div>
+            <div className="space-y-6">
               <div>
-                <label htmlFor="jobUrl" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="jobUrl" className="block text-sm font-medium text-gray-700 mb-2">
                   Paste LinkedIn Job URL Here
                 </label>
                 <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <LinkIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
                     id="jobUrl"
                     value={jobUrl}
                     onChange={handleJobUrlChange}
-                    placeholder="Paste LinkedIn job URL here"
-                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${jobDescription ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="https://www.linkedin.com/jobs/view/..."
+                    className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-300 transition-all
+                      ${jobDescription ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-300'}`}
                     disabled={!!jobDescription}
                   />
                 </div>
               </div>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 bg-white text-sm text-gray-500">Or</span>
+                </div>
+              </div>
               <div>
-                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                  Or, Paste Job Description Here
+                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                  Paste Job Description Here
                 </label>
                 <textarea
                   id="jobDescription"
                   value={jobDescription}
                   onChange={handleJobDescriptionChange}
                   rows={4}
-                  placeholder="Paste the job description here"
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${jobUrl ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Copy and paste the complete job description here..."
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-300 transition-all
+                    ${jobUrl ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-300'}`}
                   disabled={!!jobUrl}
                 />
               </div>
             </div>
           </div>
         </div>
+
+        {/* After Job Details Section */}
+              <div className="bg-white rounded-lg shadow-enhanced p-6 col-span-2">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Choose Resume Style</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {RESUME_STYLES.map((style) => (
+                    <div
+                      key={style.id}
+                      onClick={() => setSelectedStyle(style.id)}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all
+                        ${selectedStyle === style.id 
+                          ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-opacity-50' 
+                          : 'border-gray-200 hover:border-primary-300'}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-gray-900">{style.name}</h3>
+                        {selectedStyle === style.id && (
+                          <CheckCircle className="h-5 w-5 text-primary-500" />
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600">{style.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
         {/* Error Message */}
         {error && (
@@ -533,27 +670,8 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Usage Tracker */}
-        <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">
-              Daily Resume Processing Limit
-            </h3>
-            <span className="text-sm text-gray-600">{dailyUsageCount}/{maxUsage} resumes today</span>
-          </div>
-          <div className="h-2 rounded-full overflow-hidden">
-            <div
-              className="h-full transition-all duration-300"
-              style={{
-                width: `${(dailyUsageCount / maxUsage) * 100}%`,
-                backgroundColor: (dailyUsageCount / maxUsage) * 100 < 33 ? '#4ade80' : (dailyUsageCount / maxUsage) * 100 < 66 ? '#facc15' : '#f87171'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Processed Resumes Table */}
-        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden">
+        {/* Processed Resumes Table - Moved to top */}
+        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-8">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-xl font-bold text-gray-900">Processed Resumes</h2>
           </div>
@@ -614,6 +732,32 @@ export default function Dashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* Usage Tracker - Moved to bottom */}
+        {/* Usage Tracker */}
+        <div className="bg-white rounded-lg shadow-enhanced p-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-gray-900">
+              Daily Resume Processing Limit
+            </h3>
+            <span className="text-sm text-gray-600">{dailyUsageCount}/{maxUsage} resumes today</span>
+          </div>
+          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-full transition-all duration-500 ease-in-out"
+              style={{
+                width: `${(dailyUsageCount / maxUsage) * 100}%`,
+                backgroundColor: dailyUsageCount === 1 
+                  ? '#4ade80' 
+                  : dailyUsageCount === 2 
+                  ? '#fbbf24' 
+                  : dailyUsageCount >= 3 
+                  ? '#f87171' 
+                  : '#4ade80'
+              }}
+            />
           </div>
         </div>
       </div>
