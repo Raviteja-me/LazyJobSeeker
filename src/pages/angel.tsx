@@ -168,19 +168,16 @@ export default function Angel() {
         </div>
       </div>
 
-      {/* Add Video Demo Section */}
+      {/* Video Demo Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="relative rounded-2xl overflow-hidden aspect-video">
-          <img 
-            src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
-            alt="Angel Demo"
-            className="w-full h-full object-cover"
+          <iframe
+            className="w-full h-full absolute top-0 left-0"
+            src="https://www.youtube.com/embed/JADwscWyXOo"
+            title="Angel AI Assistant Demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
           />
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <button className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-4 transform transition-transform hover:scale-110">
-              <Play className="w-12 h-12" />
-            </button>
-          </div>
         </div>
       </div>
 
