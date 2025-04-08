@@ -89,11 +89,6 @@ const RESUME_STYLES: ResumeStyle[] = [
     description: 'Refined and graceful presentation'
   },
   {
-    id: 'fantacy',
-    name: 'Fantasy',
-    description: 'Creative and imaginative design'
-  },
-  {
     id: 'simple',
     name: 'Simple',
     description: 'Clean and minimalist approach'
@@ -102,11 +97,6 @@ const RESUME_STYLES: ResumeStyle[] = [
     id: 'straight',
     name: 'Straight',
     description: 'Direct and structured format'
-  },
-  {
-    id: 'modern',
-    name: 'Modern',
-    description: 'Contemporary and sleek design'
   }
 ];
 
