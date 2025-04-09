@@ -19,5 +19,13 @@ service cloud.firestore {
       allow update: if isOwner(resource.data.userId);
       allow delete: if isOwner(resource.data.userId);
     }
+    
+    // Rules for dailyUsage collection
+    match /dailyUsage/{documentId} {
+      // Allow read if the document ID starts with the user's UID
+      allow read: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
+      // Allow write if the document ID starts with the user's UID
+      allow write: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
+    }
   }
 }

@@ -273,10 +273,11 @@ export default function Dashboard() {
       return;
     }
 
-    if (!selectedStyle) {
-      setError('Please select a resume style to continue.');
-      return;
-    }
+    // Temporarily remove style validation since we've hidden the section
+    // if (!selectedStyle) {
+    //   setError('Please select a resume style to continue.');
+    //   return;
+    // }
 
     if (jobUrl && jobDescription) {
       setError('Please provide either a job URL or a job description, not both.');
@@ -355,17 +356,6 @@ export default function Dashboard() {
       const today = new Date().toISOString().split('T')[0];
       const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
       
-      await updateDoc(dailyUsageRef, {
-        count: dailyUsageCount + 1,
-        lastUpdated: Timestamp.now()
-      }).catch(() => {
-        // If document doesn't exist, create it
-        setDoc(dailyUsageRef, {
-          count: 1,
-          lastUpdated: Timestamp.now()
-        });
-      });
-
       // Create new resume entry
       const newResume: TempProcessedResume = {
         id: Date.now().toString(),
@@ -376,9 +366,28 @@ export default function Dashboard() {
         pdfBlob: pdfBlob
       };
 
+      // Update local state with correct counts first
+      const newDailyCount = dailyUsageCount + 1;
+      const newTotalCount = usageCount + 1;
+      
+      // Remove this line that causes the duplicate declaration error
+      // const dailyUsageRef = doc(db, 'dailyUsage', `${user.uid}_${today}`);
+      
+      await updateDoc(dailyUsageRef, {
+        count: newDailyCount,
+        lastUpdated: Timestamp.now()
+      }).catch(() => {
+        // If document doesn't exist, create it
+        setDoc(dailyUsageRef, {
+          count: 1,
+          lastUpdated: Timestamp.now()
+        });
+      });
+
+      // Update local state after Firestore is updated
       setProcessedResumes(prev => [newResume, ...prev]);
-      setUsageCount(prev => prev + 1);
-      setDailyUsageCount(prev => prev + 1);
+      setUsageCount(newTotalCount);
+      setDailyUsageCount(newDailyCount);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       setFile(null);
@@ -596,30 +605,32 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* After Job Details Section */}
-              <div className="bg-white rounded-lg shadow-enhanced p-6 col-span-2">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Choose Resume Style</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {RESUME_STYLES.map((style) => (
-                    <div
-                      key={style.id}
-                      onClick={() => setSelectedStyle(style.id)}
-                      className={`border rounded-lg p-4 cursor-pointer transition-all
-                        ${selectedStyle === style.id 
-                          ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-opacity-50' 
-                          : 'border-gray-200 hover:border-primary-300'}`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-gray-900">{style.name}</h3>
-                        {selectedStyle === style.id && (
-                          <CheckCircle className="h-5 w-5 text-primary-500" />
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600">{style.description}</p>
-                    </div>
-                  ))}
+        {/* After Job Details Section - Temporarily hidden */}
+        {/* Commenting out the style selection section for now
+        <div className="bg-white rounded-lg shadow-enhanced p-6 col-span-2">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Choose Resume Style</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {RESUME_STYLES.map((style) => (
+              <div
+                key={style.id}
+                onClick={() => setSelectedStyle(style.id)}
+                className={`border rounded-lg p-4 cursor-pointer transition-all
+                  ${selectedStyle === style.id 
+                    ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-opacity-50' 
+                    : 'border-gray-200 hover:border-primary-300'}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-gray-900">{style.name}</h3>
+                  {selectedStyle === style.id && (
+                    <CheckCircle className="h-5 w-5 text-primary-500" />
+                  )}
                 </div>
+                <p className="text-sm text-gray-600">{style.description}</p>
               </div>
+            ))}
+          </div>
+        </div>
+        */}
 
         {/* Error Message */}
         {error && (
