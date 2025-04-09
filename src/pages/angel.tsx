@@ -37,17 +37,17 @@ export default function Angel() {
     {
       icon: <Monitor className="w-6 h-6" />,
       title: "Always On Top",
-      description: "Floating interface that stays visible during meetings without disrupting your workflow"
+      description: "Floating interface that stays on Top Always during meetings"
     },
     {
       icon: <Shield className="w-6 h-6" />,
       title: "Privacy First",
-      description: "Completely invisible in screen sharing - your secret advantage in any meeting"
+      description: "Completely invisible in screen sharing"
     },
     {
       icon: <Cpu className="w-6 h-6" />,
       title: "AI-Powered Assistant",
-      description: "Real-time answers and suggestions powered by advanced artificial intelligence"
+      description: "Advanced AI capabilities for complex discussions"
     },
     {
       icon: <Zap className="w-6 h-6" />,
@@ -101,10 +101,34 @@ export default function Angel() {
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Meet Angel
           </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Your AI-powered meeting assistant that helps you shine in every conversation.
-            From job interviews to rocket science discussions, Angel has got your back.
-          </p>
+          <div className="text-center mb-16">
+          
+          <h2 className="text-3xl font-bold mb-6">Take Your Meetings to the Next Level</h2>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+        <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-3xl p-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">How Angel Works</h2>
+            
+          </div>
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { icon: <Download className="w-8 h-8" />, text: "Download & Install" },
+              { icon: <Target className="w-8 h-8" />, text: "Open Angel" },
+              { icon: <Brain className="w-8 h-8" />, text: "Start Meeting" },
+              { icon: <Sparkles className="w-8 h-8" />, text: "Get Real-time Help" }
+            ].map((step, index) => (
+              <div key={index} className="text-center">
+                <div className="bg-purple-500/20 rounded-full p-4 inline-block mb-4">
+                  {step.icon}
+                </div>
+                <p className="text-lg font-medium">{step.text}</p>
+                
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+        </div>
         </div>
 
         {/* Features Grid */}
@@ -142,30 +166,8 @@ export default function Angel() {
           </div>
         </div>
 
-        {/* Pro Features */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 rounded-full mb-6">
-            <Star className="w-5 h-5 text-yellow-500 mr-2" />
-            <span className="text-yellow-400">Pro Features</span>
-          </div>
-          <h2 className="text-3xl font-bold mb-6">Take Your Meetings to the Next Level</h2>
-          <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50">
-            <ul className="space-y-4 text-left max-w-2xl mx-auto">
-              <li className="flex items-center">
-                <Lock className="w-5 h-5 text-purple-500 mr-3" />
-                <span>Complete invisibility during screen sharing</span>
-              </li>
-              <li className="flex items-center">
-                <Shield className="w-5 h-5 text-purple-500 mr-3" />
-                <span>Enhanced privacy protection</span>
-              </li>
-              <li className="flex items-center">
-                <Zap className="w-5 h-5 text-purple-500 mr-3" />
-                <span>Advanced AI capabilities for complex discussions</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+        
+        
       </div>
 
       {/* Video Demo Section */}
@@ -182,92 +184,9 @@ export default function Angel() {
       </div>
 
       {/* Add Use Cases Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Perfect for Every Scenario</h2>
-          <p className="text-gray-400">See how Angel can help you in different situations</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-8">
-          {useCases.map((useCase, index) => (
-            <div key={index} className="relative group overflow-hidden rounded-xl">
-              <img 
-                src={useCase.image} 
-                alt={useCase.title}
-                className="w-full h-64 object-cover transform transition-transform group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-6 flex flex-col justify-end">
-                <h3 className="text-xl font-bold mb-2">{useCase.title}</h3>
-                <p className="text-gray-300">{useCase.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
+      
       {/* Add How It Works Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="bg-gradient-to-r from-purple-900/30 to-pink-900/30 rounded-3xl p-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">How Angel Works</h2>
-            <p className="text-gray-400">Simple setup, powerful results</p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { icon: <Download className="w-8 h-8" />, text: "Download & Install" },
-              { icon: <Target className="w-8 h-8" />, text: "Select Meeting Mode" },
-              { icon: <Brain className="w-8 h-8" />, text: "AI Processes Context" },
-              { icon: <Sparkles className="w-8 h-8" />, text: "Get Real-time Help" }
-            ].map((step, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-purple-500/20 rounded-full p-4 inline-block mb-4">
-                  {step.icon}
-                </div>
-                <p className="text-lg font-medium">{step.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Add Testimonials Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full mb-6">
-            <Users className="w-5 h-5 text-purple-400 mr-2" />
-            <span className="text-purple-400">User Stories</span>
-          </div>
-          <h2 className="text-3xl font-bold mb-4">Loved by Professionals</h2>
-        </div>
-        <div className="grid md:grid-cols-2 gap-8">
-          {testimonials.map((testimonial, index) => (
-            <div key={index} className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
-              <p className="text-lg mb-4">"{testimonial.text}"</p>
-              <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mr-4">
-                  <Users className="w-6 h-6 text-purple-400" />
-                </div>
-                <div>
-                  <p className="font-medium">{testimonial.author}</p>
-                  <p className="text-sm text-gray-400">{testimonial.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Existing Pro Features Section */}
-
-      {/* Add CTA Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-3xl p-12 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Meetings?</h2>
-          <p className="text-xl text-gray-300 mb-8">Join thousands of professionals using Angel to excel in their careers</p>
-          <button className="bg-purple-500 hover:bg-purple-600 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all transform hover:scale-105">
-            Download Angel Now
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 }

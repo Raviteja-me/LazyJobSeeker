@@ -61,7 +61,7 @@ export default function Home() {
         <div className="text-center z-10 mt-8">
           <div className="mb-6 inline-block">
             <span className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-white px-6 py-2 rounded-full text-sm font-semibold border border-purple-500/30">
-              🎯 Its not just another job tool - I am your unfair advantage in the job market.
+              🎯 100% Privacy Guaranteed
             </span>
           </div>
           
@@ -175,10 +175,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-8 text-gray-400 text-sm">
             
             
-            <div className="flex items-center">
-              <Shield className="w-4 h-4 text-purple-400 mr-2" />
-              <span>100% Privacy Guaranteed</span>
-            </div>
+          
           </div>
         </div>
 
