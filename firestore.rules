@@ -12,19 +12,26 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Rules for users collection
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
     // Rules for processedResumes collection
     match /processedResumes/{documentId} {
       allow read: if isOwner(resource.data.userId);
       allow create: if isOwner(request.resource.data.userId);
       allow update: if isOwner(resource.data.userId);
       allow delete: if isOwner(resource.data.userId);
+      allow list: if isAuthenticated() && request.query.limit <= 3;
     }
     
     // Rules for dailyUsage collection
     match /dailyUsage/{documentId} {
-      // Allow read if the document ID starts with the user's UID
       allow read: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
-      // Allow write if the document ID starts with the user's UID
       allow write: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
     }
   }

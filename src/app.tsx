@@ -11,7 +11,7 @@ import { useAuth } from './context/AuthContext';
 
 // Import pages
 import HomePage from './pages/home';
-import MagicCVPage from './pages/MagicCV';  // Updated import
+import MagicCVPage from './pages/MagicCV.tsx';  // Updated import with .tsx extension
 import AngelPage from './pages/angel';
 import LoginPage from './pages/login';
 import SupportPage from './pages/support';
