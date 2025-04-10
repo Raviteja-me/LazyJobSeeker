@@ -661,32 +661,32 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Processed Resumes Table - More attractive */}
-        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-8 border border-indigo-100">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
-            <h2 className="text-xl font-bold">Your Enhanced Resumes</h2>
+        {/* Processed Resumes Table - More subtle and elegant */}
+        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-8 border border-gray-200">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6">
+            <h2 className="text-xl font-bold text-gray-800">Your Enhanced Resumes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-indigo-50">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Job Title
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Date Processed
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-indigo-100">
+              <tbody className="divide-y divide-gray-200">
                 {processedResumes.map((resume) => (
-                  <tr key={resume.id} className="hover:bg-indigo-50/50 transition-colors">
+                  <tr key={resume.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">{resume.jobTitle}</span>
                     </td>
@@ -705,7 +705,7 @@ export default function Dashboard() {
                       {resume.pdfBlob && (
                         <button
                           onClick={() => handleDownload(resume)}
-                          className="text-indigo-600 hover:text-indigo-800 inline-flex items-center bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-full text-sm transition-colors"
+                          className="text-blue-600 hover:text-blue-800 inline-flex items-center bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-full text-sm transition-colors"
                         >
                           <Download className="h-4 w-4 mr-1" />
                           Download
@@ -718,8 +718,8 @@ export default function Dashboard() {
                   <tr>
                     <td colSpan={4} className="px-6 py-8 text-center">
                       <div className="flex flex-col items-center justify-center text-gray-500">
-                        <FileText className="h-12 w-12 text-indigo-200 mb-2" />
-                        <p className="text-indigo-500 font-medium">No resumes processed yet</p>
+                        <FileText className="h-12 w-12 text-gray-300 mb-2" />
+                        <p className="text-gray-600 font-medium">No resumes processed yet</p>
                         <p className="text-sm mt-1">Your enhanced resumes will appear here</p>
                       </div>
                     </td>

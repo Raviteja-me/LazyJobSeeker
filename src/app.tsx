@@ -67,23 +67,51 @@ function App() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center">
               <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
-                <Link to="/" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black">
+                <Link 
+                  to="/" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    window.location.pathname === '/' 
+                      ? 'bg-white text-black shadow-sm' 
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
                   Home
                 </Link>
-                <Link to="/dashboard" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black">
+                <Link 
+                  to="/dashboard" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    window.location.pathname === '/dashboard' 
+                      ? 'bg-white text-black shadow-sm' 
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
                   Magic CV
                 </Link>
-                <Link to="/angel" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black">
+                <Link 
+                  to="/angel" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    window.location.pathname === '/angel' 
+                      ? 'bg-white text-black shadow-sm' 
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
                   Angel
                 </Link>
-                <Link to="/support" className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-black">
+                <Link 
+                  to="/support" 
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                    window.location.pathname === '/support' 
+                      ? 'bg-white text-black shadow-sm' 
+                      : 'text-gray-700 hover:text-black'
+                  }`}
+                >
                   Support
                 </Link>
               </div>
               {user ? (
                 <button
                   onClick={handleLogout}
-                  className="ml-4 flex items-center text-sm font-medium text-gray-700 hover:text-black"
+                  className="ml-4 flex items-center text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
                 >
                   <LogOut className="h-4 w-4 mr-1" />
                   Logout
