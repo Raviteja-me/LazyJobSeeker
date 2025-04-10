@@ -27,7 +27,7 @@ const ProcessedResumes: React.FC<ProcessedResumesProps> = ({
   handleDownload
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-16 border border-gray-200">
+    <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-7 border border-gray-200">
       <div className="bg-gradient-to-r from-blue-50 to-indigo-100 p-6">
         <h2 className="text-xl font-bold text-gray-800">Your Enhanced Resumes</h2>
       </div>

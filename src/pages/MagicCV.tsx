@@ -280,14 +280,14 @@ export default function MagicCVPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-16 ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-24 pb-0.5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-">
         
         {/* Privacy Notice */}
         <PrivacyNotice show={showDataNotice} />
 
         {/* Main Content Grid */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid md:grid-cols-2 gap-4 mb-8">
           {/* Resume Input Component */}
           <ResumeInput 
             file={file}
