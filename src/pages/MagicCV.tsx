@@ -38,11 +38,9 @@ interface ProcessedResume {
   error?: string;
 }
 
+// Update the ALLOWED_FILE_TYPES constant to only include PDF and text files
 const ALLOWED_FILE_TYPES = [
   'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.oasis.opendocument.text',
   'text/plain'
 ];
 
@@ -118,6 +116,8 @@ export default function Dashboard() {
   const [maxUsage] = useState(3);
   const [dragActive, setDragActive] = useState(false);
   const [showDataNotice, setShowDataNotice] = useState(false);
+  // Add new state for CV text input
+  const [cvText, setCvText] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -262,9 +262,9 @@ export default function Dashboard() {
       return;
     }
 
-    // Check for all required elements
-    if (!file) {
-      setError('Please upload your resume to continue.');
+    // Check for all required elements - update to allow either file or text
+    if (!file && !cvText) {
+      setError('Please upload your resume or paste resume text to continue.');
       return;
     }
 
@@ -307,7 +307,11 @@ export default function Dashboard() {
       const formData = new FormData();
       if (file) {
         formData.append('cv', file);
+      } else if (cvText) {
+        // Send CV text as a parameter
+        formData.append('cv_text', cvText);
       }
+      
       if (jobUrl) {
         formData.append('url', jobUrl);
       }
@@ -315,7 +319,7 @@ export default function Dashboard() {
         formData.append('jobDescription', jobDescription);
       }
       // Add selected style to form data
-      formData.append('style', selectedStyle); // This adds the selected style ID (e.g., 'blackmagic', 'elegant', etc.)
+      formData.append('style', selectedStyle);
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 180000);
@@ -391,6 +395,7 @@ export default function Dashboard() {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       setFile(null);
+      setCvText(''); // Clear CV text
       setJobUrl('');
       setJobDescription('');
       setShowDataNotice(true);
@@ -444,34 +449,31 @@ export default function Dashboard() {
   const userDisplayName = user?.email ? user.email.split('@')[0] : 'User';
 
   // Update the welcome banner to use the safe display name
+ // ... existing imports and interfaces remain the same
+
+
+  // ... existing state declarations remain the same
+
+  // ... existing functions remain the same
+
+  // Updated return statement with more attractive UI
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-primary-50 pt-24">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow-enhanced p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome, {userDisplayName}!
-              </h1>
-              <p className="text-gray-600 mt-2">
-                Upload your resume and paste a job link or description to get started.
-              </p>
-            </div>
-            <Brain className="h-12 w-12 text-primary-500" />
-          </div>
-        </div>
+         
+        
 
         {showDataNotice && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-enhanced p-6 mb-8 border border-blue-100">
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-enhanced p-6 mb-8 text-white">
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <Shield className="h-8 w-8 text-blue-500" />
+              <div className="flex-shrink-0 bg-white/20 p-2 rounded-full">
+                <Shield className="h-8 w-8 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-blue-900 mb-1">
+                <h3 className="text-lg font-semibold mb-1">
                   Your Privacy Matters
                 </h3>
-                <p className="text-blue-700 leading-relaxed">
+                <p className="leading-relaxed opacity-90">
                   For your security, we process your resume in real-time and don't store any personal data. 
                   Make sure to download your enhanced resume now – it's a temporary file that prioritizes your privacy.
                 </p>
@@ -481,113 +483,126 @@ export default function Dashboard() {
         )}
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Resume Upload Section */}
-          <div className="bg-white rounded-xl shadow-enhanced p-6 transform hover:scale-[1.01] transition-all">
+          {/* Resume Upload Section - More colorful and attractive */}
+          <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-enhanced p-6 transform hover:scale-[1.01] transition-all border border-purple-100">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-primary-50 p-2 rounded-lg">
-                <Upload className="h-5 w-5 text-primary-500" />
+              <div className="bg-purple-500 p-2 rounded-lg">
+                <Upload className="h-5 w-5 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Upload Your Resume</h2>
+              <h2 className="text-lg font-bold text-purple-900">Resume Input</h2>
             </div>
-            <div
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              className={`relative border-2 border-dashed rounded-xl transition-all min-h-[140px] flex items-center justify-center
-                ${dragActive ? 'border-primary-500 bg-primary-50/30' : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50/50'}
-                ${file ? 'bg-green-50/20 border-green-400 p-4' : 'p-6'}`}
-            >
-              {file ? (
-                <div className="w-full max-w-md mx-auto">
-                  <div className="flex items-center bg-white rounded-xl p-4 border border-primary-100 hover:border-primary-200 transition-all">
-                    <div className="bg-primary-50 p-2 rounded-lg">
-                      <FileText className="h-5 w-5 text-primary-500 flex-shrink-0" />
-                    </div>
-                    <span className="text-gray-700 font-medium truncate ml-3">{file.name}</span>
-                    <button
-                      onClick={() => setFile(null)}
-                      className="ml-auto flex items-center px-3 py-1.5 text-primary-600 hover:text-primary-700 transition-colors rounded-lg hover:bg-primary-50 text-sm"
+            
+            {/* File Upload Option - More Compact with Button */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-purple-700 mb-2">
+                Upload PDF Resume
+              </label>
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-lg transition-all p-3 flex items-center justify-between
+                  ${dragActive ? 'border-purple-500 bg-purple-50/50' : 'border-purple-200 hover:border-purple-300 hover:bg-purple-50/50'}
+                  ${file ? 'bg-green-50/30 border-green-400' : ''}`}
+              >
+                {file ? (
+                  <div className="flex items-center space-x-2 w-full">
+                    <FileText className="h-4 w-4 text-green-500 flex-shrink-0" />
+                    <span className="text-xs font-medium text-gray-700 truncate flex-1">{file.name}</span>
+                    <button 
+                      onClick={() => setFile(null)} 
+                      className="text-gray-400 hover:text-red-500 flex-shrink-0"
                     >
-                      <Edit3 className="h-4 w-4 mr-1" />
-                      Change
+                      <XCircle className="h-4 w-4" />
                     </button>
                   </div>
-                  <div className="flex items-center justify-center mt-3">
-                    <p className="text-xs text-gray-500">
-                      File ready for processing
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center max-w-sm mx-auto">
-                  <div className="bg-primary-50/50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <Upload className="h-8 w-8 text-primary-500" />
-                  </div>
-                  <div className="space-y-3">
-                    <p className="text-gray-700 font-medium">Drag and drop your resume here, or</p>
-                    <label className="inline-flex items-center px-4 py-2 bg-primary-50 text-primary-600 rounded-lg hover:bg-primary-100 cursor-pointer transition-all hover:shadow-md">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Browse to upload
+                ) : (
+                  <div className="w-full flex items-center justify-between">
+                    <span className="text-xs text-purple-600">Drag PDF or text file here</span>
+                    <label className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-90 text-white text-xs py-1.5 px-4 rounded-full cursor-pointer transition-all shadow-sm">
+                      Upload
                       <input
                         type="file"
                         className="hidden"
-                        accept=".pdf,.doc,.docx,.odt,.txt"
+                        accept=".pdf,text/plain"
                         onChange={handleFileInput}
                       />
                     </label>
-                    <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-                      <span className="px-2 py-1 bg-gray-50 rounded-full">PDF</span>
-                      <span className="px-2 py-1 bg-gray-50 rounded-full">DOC</span>
-                      <span className="px-2 py-1 bg-gray-50 rounded-full">DOCX</span>
-                      <span className="text-gray-400">Max 5MB</span>
-                    </div>
                   </div>
-                </div>
-              )}
-              {dragActive && (
-                <div className="absolute inset-0 border-2 border-primary-500 rounded-xl bg-primary-50/20 flex items-center justify-center">
-                  <div className="text-primary-500 font-medium">Drop your file here</div>
-                </div>
-              )}
+                )}
+              </div>
+              <p className="text-xs text-purple-500 mt-1">Only PDF files up to 5MB</p>
+            </div>
+            
+            {/* Divider */}
+            <div className="flex items-center my-3">
+              <div className="flex-grow border-t border-purple-200"></div>
+              <span className="mx-3 text-xs font-medium text-purple-500 uppercase">Or</span>
+              <div className="flex-grow border-t border-purple-200"></div>
+            </div>
+            
+            {/* Text Input Option */}
+            <div>
+              <label className="block text-sm font-medium text-purple-700 mb-2">
+                Paste Resume Text
+              </label>
+              <textarea
+                placeholder="Copy and paste your resume text here..."
+                className={`w-full border border-purple-200 rounded-lg p-3 text-sm text-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-purple-300 transition-all ${file ? 'opacity-50 cursor-not-allowed' : ''}`}
+                rows={5}
+                disabled={!!file}
+                onChange={(e) => {
+                  setCvText(e.target.value);
+                  if (e.target.value && file) {
+                    setFile(null);
+                  }
+                }}
+                value={cvText}
+              ></textarea>
+              <p className="text-xs text-purple-500 mt-1">
+                {file ? 'Clear the uploaded file to use text input instead' : 'Enter your resume content directly'}
+              </p>
             </div>
           </div>
 
-          {/* Job Details Section */}
-          <div className="bg-white rounded-xl shadow-enhanced p-8 transform hover:scale-[1.01] transition-all">
-            <div className="flex items-center space-x-3 mb-6">
-              <Brain className="h-6 w-6 text-primary-500" />
-              <h2 className="text-xl font-bold text-gray-900">Job Details</h2>
+          {/* Job Details Section - More colorful */}
+          <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-enhanced p-6 transform hover:scale-[1.01] transition-all border border-blue-100">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="bg-blue-500 p-2 rounded-lg">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
+              <h2 className="text-lg font-bold text-blue-900">Job Details</h2>
             </div>
             <div className="space-y-6">
               <div>
-                <label htmlFor="jobUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="jobUrl" className="block text-sm font-medium text-blue-700 mb-2">
                   Paste LinkedIn Job URL Here
                 </label>
                 <div className="relative">
-                  <LinkIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
+                  <LinkIcon className="absolute left-4 top-3.5 h-5 w-5 text-blue-400" />
                   <input
                     type="text"
                     id="jobUrl"
                     value={jobUrl}
                     onChange={handleJobUrlChange}
                     placeholder="https://www.linkedin.com/jobs/view/..."
-                    className={`w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-300 transition-all
-                      ${jobDescription ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-300'}`}
+                    className={`w-full pl-12 pr-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-300 transition-all
+                      ${jobDescription ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-300'}`}
                     disabled={!!jobDescription}
                   />
                 </div>
               </div>
               <div className="relative">
                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                  <div className="w-full border-t border-gray-200"></div>
+                  <div className="w-full border-t border-blue-200"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="px-3 bg-white text-sm text-gray-500">Or</span>
+                  <span className="px-3 bg-white text-sm text-blue-500 font-medium">Or</span>
                 </div>
               </div>
               <div>
-                <label htmlFor="jobDescription" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="jobDescription" className="block text-sm font-medium text-blue-700 mb-2">
                   Paste Job Description Here
                 </label>
                 <textarea
@@ -596,8 +611,8 @@ export default function Dashboard() {
                   onChange={handleJobDescriptionChange}
                   rows={4}
                   placeholder="Copy and paste the complete job description here..."
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-300 transition-all
-                    ${jobUrl ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary-300'}`}
+                  className={`w-full px-4 py-3 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-300 transition-all
+                    ${jobUrl ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-300'}`}
                   disabled={!!jobUrl}
                 />
               </div>
@@ -605,36 +620,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* After Job Details Section - Temporarily hidden */}
-        {/* Commenting out the style selection section for now
-        <div className="bg-white rounded-lg shadow-enhanced p-6 col-span-2">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Choose Resume Style</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {RESUME_STYLES.map((style) => (
-              <div
-                key={style.id}
-                onClick={() => setSelectedStyle(style.id)}
-                className={`border rounded-lg p-4 cursor-pointer transition-all
-                  ${selectedStyle === style.id 
-                    ? 'border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-opacity-50' 
-                    : 'border-gray-200 hover:border-primary-300'}`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-medium text-gray-900">{style.name}</h3>
-                  {selectedStyle === style.id && (
-                    <CheckCircle className="h-5 w-5 text-primary-500" />
-                  )}
-                </div>
-                <p className="text-sm text-gray-600">{style.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        */}
-
         {/* Error Message */}
         {error && (
-          <div className="mb-8 p-4 bg-red-50 rounded-lg flex items-center text-red-700">
+          <div className="mb-8 p-4 bg-red-100 border border-red-200 rounded-lg flex items-center text-red-700 shadow-sm">
             <AlertCircle className="h-5 w-5 mr-2" />
             {error}
           </div>
@@ -642,20 +630,22 @@ export default function Dashboard() {
 
         {/* Success Message */}
         {showSuccess && (
-          <div className="mb-8 p-4 bg-green-50 rounded-lg flex items-center text-green-700">
+          <div className="mb-8 p-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center text-white shadow-enhanced animate-pulse">
             <PartyPopper className="h-5 w-5 mr-2" />
             Your resume has been successfully enhanced! You can download it from the table below.
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit Button - More attractive */}
         <div className="mb-8">
           <button
             onClick={handleSubmit}
-            disabled={isProcessing || isUploading || (!file && !jobUrl && !jobDescription) || dailyUsageCount >= maxUsage}
-            className={`w-full py-4 px-6 rounded-lg text-white font-medium flex items-center justify-center space-x-2
-              ${isProcessing || isUploading || dailyUsageCount >= maxUsage ? 'bg-gray-400' : 'bg-gradient-primary hover:opacity-90'} 
-              transform hover:scale-[1.02] transition-all shadow-enhanced`}
+            disabled={isProcessing || isUploading || (!file && !cvText && !jobUrl && !jobDescription) || dailyUsageCount >= maxUsage}
+            className={`w-full py-4 px-6 rounded-full text-white font-medium flex items-center justify-center space-x-2
+              ${isProcessing || isUploading || dailyUsageCount >= maxUsage 
+                ? 'bg-gray-400' 
+                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'} 
+              transform hover:scale-[1.02] transition-all shadow-lg`}
           >
             {isProcessing || isUploading ? (
               <>
@@ -664,39 +654,39 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                <Brain className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
                 <span>Generate Enhanced Resume</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Processed Resumes Table - Moved to top */}
-        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-8">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Processed Resumes</h2>
+        {/* Processed Resumes Table - More attractive */}
+        <div className="bg-white rounded-lg shadow-enhanced overflow-hidden mb-8 border border-indigo-100">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+            <h2 className="text-xl font-bold">Your Enhanced Resumes</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-indigo-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
                     Job Title
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
                     Date Processed
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-indigo-700 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-indigo-100">
                 {processedResumes.map((resume) => (
-                  <tr key={resume.id} className="hover:bg-gray-50">
+                  <tr key={resume.id} className="hover:bg-indigo-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm text-gray-900">{resume.jobTitle}</span>
                     </td>
@@ -715,7 +705,7 @@ export default function Dashboard() {
                       {resume.pdfBlob && (
                         <button
                           onClick={() => handleDownload(resume)}
-                          className="text-primary-600 hover:text-primary-700 inline-flex items-center"
+                          className="text-indigo-600 hover:text-indigo-800 inline-flex items-center bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-full text-sm transition-colors"
                         >
                           <Download className="h-4 w-4 mr-1" />
                           Download
@@ -726,8 +716,12 @@ export default function Dashboard() {
                 ))}
                 {processedResumes.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                      No resumes processed yet
+                    <td colSpan={4} className="px-6 py-8 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-500">
+                        <FileText className="h-12 w-12 text-indigo-200 mb-2" />
+                        <p className="text-indigo-500 font-medium">No resumes processed yet</p>
+                        <p className="text-sm mt-1">Your enhanced resumes will appear here</p>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -736,30 +730,39 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Usage Tracker - Moved to bottom */}
-        {/* Usage Tracker */}
-        <div className="bg-white rounded-lg shadow-enhanced p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-gray-900">
-              Daily Resume Processing Limit
-            </h3>
-            <span className="text-sm text-gray-600">{dailyUsageCount}/{maxUsage} resumes today</span>
+        {/* Usage Tracker - More attractive */}
+        <div className="bg-gradient-to-r from-white to-indigo-50 rounded-lg shadow-enhanced p-6 border border-indigo-100">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center">
+              <Clock className="h-5 w-5 text-indigo-600 mr-2" />
+              <h3 className="font-semibold text-indigo-900">
+                Daily Resume Processing Limit
+              </h3>
+            </div>
+            <span className="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium">
+              {dailyUsageCount}/{maxUsage} resumes today
+            </span>
           </div>
-          <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-3 rounded-full bg-gray-100 overflow-hidden shadow-inner">
             <div
-              className="h-full transition-all duration-500 ease-in-out"
+              className="h-full transition-all duration-500 ease-in-out rounded-full"
               style={{
                 width: `${(dailyUsageCount / maxUsage) * 100}%`,
-                backgroundColor: dailyUsageCount === 1 
-                  ? '#4ade80' 
+                background: dailyUsageCount === 0 
+                  ? 'linear-gradient(to right, #4ade80, #22c55e)' 
+                  : dailyUsageCount === 1 
+                  ? 'linear-gradient(to right, #4ade80, #22c55e)' 
                   : dailyUsageCount === 2 
-                  ? '#fbbf24' 
-                  : dailyUsageCount >= 3 
-                  ? '#f87171' 
-                  : '#4ade80'
+                  ? 'linear-gradient(to right, #fbbf24, #f59e0b)' 
+                  : 'linear-gradient(to right, #f87171, #ef4444)'
               }}
             />
           </div>
+          <p className="text-xs text-indigo-500 mt-2">
+            {dailyUsageCount >= maxUsage 
+              ? 'You\'ve reached your daily limit. Check back tomorrow!' 
+              : `You have ${maxUsage - dailyUsageCount} resume enhancements remaining today.`}
+          </p>
         </div>
       </div>
     </div>
