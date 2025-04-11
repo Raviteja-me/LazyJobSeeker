@@ -77,13 +77,10 @@ function App() {
                 >
                   Home
                 </Link>
+               
                 <Link 
-                  to="/dashboard" 
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    window.location.pathname === '/dashboard' 
-                      ? 'bg-white text-black shadow-sm' 
-                      : 'text-gray-700 hover:text-black'
-                  }`}
+                  to="/magic-cv" 
+                  className="text-gray-700 hover:text-black px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Magic CV
                 </Link>
@@ -134,24 +131,10 @@ function App() {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/magic-cv" element={<MagicCVPage />} /> {/* Changed from /dashboard */}
+          <Route path="/angel" element={<AngelPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/support" element={<SupportPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <MagicCVPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/angel"
-            element={
-              <ProtectedRoute>
-                <AngelPage />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </main>
 

@@ -17,6 +17,7 @@ import JobDetails from '../components/MagicCV/JobDetails';
 import ProcessedResumes from '../components/MagicCV/ProcessedResumes';
 import UsageTracker from '../components/MagicCV/UsageTracker';
 import PrivacyNotice from '../components/MagicCV/PrivacyNotice';
+import Comments from '../components/MagicCV/Comments';
 
 // Constants
 const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
@@ -280,8 +281,8 @@ export default function MagicCVPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-24 pb-0.5">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pt-24 pb-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Privacy Notice */}
         <PrivacyNotice show={showDataNotice} />
@@ -363,6 +364,9 @@ export default function MagicCVPage() {
           processedResumes={processedResumes}
           handleDownload={handleDownload}
         />
+        
+        {/* Comments Component */}
+        <Comments />
       </div>
     </div>
   );

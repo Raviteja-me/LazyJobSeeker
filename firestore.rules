@@ -2,37 +2,45 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if user is authenticated
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-
-    // Helper function to check if user owns the document
+    
     function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Rules for users collection
-    match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-    }
-
-    // Rules for processedResumes collection
-    match /processedResumes/{documentId} {
-      allow read: if isOwner(resource.data.userId);
-      allow create: if isOwner(request.resource.data.userId);
-      allow update: if isOwner(resource.data.userId);
-      allow delete: if isOwner(resource.data.userId);
-      allow list: if isAuthenticated() && request.query.limit <= 3;
+      return request.auth.uid == userId;
     }
     
-    // Rules for dailyUsage collection
-    match /dailyUsage/{documentId} {
-      allow read: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
-      allow write: if isAuthenticated() && documentId.matches(request.auth.uid + ".*");
+    // User profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+    
+    // Processed resumes
+    match /processedResumes/{resumeId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Comments collection
+    match /comments/{commentId} {
+      // Anyone can read comments
+      allow read: if true;
+      
+      // Only authenticated users can create comments
+      allow create: if isAuthenticated() && 
+                     request.resource.data.userId == request.auth.uid;
+      
+      // Users can only update likes on comments
+      allow update: if isAuthenticated() && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']);
+      
+      // Users can only delete their own comments
+      allow delete: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
     }
   }
 }

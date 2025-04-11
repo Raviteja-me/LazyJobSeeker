@@ -18,7 +18,7 @@ export default function Login() {
   const navigate = useNavigate();
 
   if (user) {
-    return <Navigate to="/dashboard" />;
+    return <Navigate to="/magic-cv" />; // Changed from /dashboard
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
